@@ -52,7 +52,28 @@ In order 859477, Variety Pack was purchased from the food storage aisle in the h
 
 In order 1788253, Organic Grape Tomatoes came from the packaged vegetables fruits aisle in the produce department, placed on Sunday (day 0) at 4 PM.
 
+## 1.1 
 
+### How many aisles are there, and which aisles are the most items ordered from?
+
+Count the total number of aisles and identify the one with the most items ordered.
+
+```{r}
+aisle_counts <- instacart %>%
+  count(aisle, name = "n_items") %>%
+  arrange(desc(n_items))
+
+n_aisles <- nrow(aisle_counts)
+
+top_aisle <- aisle_counts %>%
+  slice(1)
+```
+
+It has `r n_aisles` aisles, the tibble below shows the the one with the most items ordered.
+
+```{r}
+top_aisle
+```
 
 
 
