@@ -1,0 +1,60 @@
+---
+title: "p8105_hw3_zn2220"
+author: "Ziang Niu"
+date: "2025-10-02"
+output: github_document
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(p8105.datasets)
+library(lubridate)
+library(janitor)
+library(knitr)
+```
+
+# Problem 1
+
+## 1.0 
+
+### To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations.
+
+Introducing data.
+
+```{r}
+data("instacart")
+instacart <- janitor::clean_names(instacart)
+```
+
+Monitor the data. It has `r nrow(instacart)` rows and `r ncol(instacart)` cols. Let's glimpse at it and make a slice. Some key variables and example are shown in the kable. 
+
+```{r}
+glimpse(instacart)
+
+set.seed(235)
+instacart_examples <- instacart %>% 
+  slice_sample(n = 5) %>% 
+  select(order_id, product_name, aisle, department, order_dow, order_hour_of_day)
+
+knitr::kable(instacart_examples, caption = "Illustrative sample of Instacart orders")
+```
+
+Important variables include order_id (unique identifier for each order), product_name (the specific item purchased), aisle (store aisle), department (broader store department), order_dow (day of week; 0 = Sunday, 6 = Saturday), and order_hour_of_day (hour of day).
+Illustrative examples highlight how these variables describe customer behavior:
+
+In order 3258129, the customer purchased Organic Extra Firm Tofu from the tofu meat alternatives aisle in the deli department, placed on Sunday (day 0) at 3 PM.
+
+In order 2741482, Organic Powdered Sugar was bought from the baking ingredients aisle in the pantry department, placed on Wednesday (day 3) at 11 AM.
+
+In order 651769, Special K Protein Milk Chocolate Protein Shakes came from the protein meal replacements aisle in the personal care department, placed on Wednesday (day 3) at 5 PM.
+
+In order 859477, Variety Pack was purchased from the food storage aisle in the household department, placed on Tuesday (day 2) at 9 AM.
+
+In order 1788253, Organic Grape Tomatoes came from the packaged vegetables fruits aisle in the produce department, placed on Sunday (day 0) at 4 PM.
+
+
+
+
+
+
+
