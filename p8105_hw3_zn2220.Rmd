@@ -26,8 +26,6 @@ Introducing data.
 ```{r}
 data("instacart")
 instacart <- janitor::clean_names(instacart)
-
-write_csv(instacart, "instacart.csv")
 ```
 
 Monitor the data. It has `r nrow(instacart)` rows and `r ncol(instacart)` cols. Let's glimpse at it and make a slice. Some key variables and example are shown in the kable. 
