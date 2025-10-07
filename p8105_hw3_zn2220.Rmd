@@ -234,3 +234,49 @@ The rental market analysis for NYC boroughs from 2015 to 2024 reveals stark cont
 
 ### Make a plot showing NYC Rental Prices within ZIP codes for all available years. Your plot should facilitate comparisons across boroughs. Comment on any significant elements of this plot.
 
+```{r}
+borough_mapping <- c(
+  "Kings County" = "Brooklyn",
+  "Queens County" = "Queens",
+  "New York County" = "Manhattan",
+  "Bronx County" = "Bronx",
+  "Richmond County" = "Staten Island"
+)
+
+df_plot <- df_zori %>%
+  select(CountyName, RegionName, starts_with("20")) %>%
+  pivot_longer(
+    cols = starts_with("20"),
+    names_to = "Date",
+    values_to = "ZORI"
+  ) %>%
+  mutate(
+    Date = as.Date(Date, format = "%Y-%m-%d"),
+    Borough = str_replace(CountyName, " County", ""),
+    Borough = recode(Borough, !!!borough_mapping)
+  ) %>%
+  filter(!is.na(Borough) & !is.na(ZORI))
+
+rental_price_plot <- ggplot(df_plot, aes(x = Date, y = ZORI, group = RegionName, color = Borough)) +
+  geom_line(alpha = 0.5) +
+  geom_smooth(aes(group = Borough), method = "loess", se = FALSE, linewidth = 1.2, color = "black") +
+  labs(
+    title = "NYC Rental Prices (ZORI) by ZIP Code and Borough (2015-2024)",
+    subtitle = "Individual ZIP codes are shown with thin lines; Borough averages are shown with thick black lines.",
+    x = "Date",
+    y = "Zillow Observed Rent Index (USD)",
+    color = "Borough"
+  ) +
+  facet_wrap(~ Borough, scales = "free_y", ncol = 2) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    legend.position = "bottom",
+    strip.text = element_text(face = "bold", size = 12),
+    panel.grid.minor = element_blank(),
+    plot.margin = unit(c(1, 1, 1, 1), "cm")
+  ) +
+  scale_color_manual(values = c("Manhattan" = "#E37222", "Brooklyn" = "#5D576F", "Queens" = "#48A9A6", "Bronx" = "#4B88A2", "Staten Island" = "#B1A7A6"))
+
+rental_price_plot
+```
