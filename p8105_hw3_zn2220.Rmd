@@ -188,5 +188,49 @@ ZIP codes observed fewer than 10 times, representing a small, illiquid rental ma
 ### Create a reader-friendly table showing the average rental price in each borough and year (not month). Comment on trends in this table.
 
 ```{r}
+borough_mapping <- c(
+  "Kings County" = "Brooklyn",
+  "Queens County" = "Queens",
+  "New York County" = "Manhattan",
+  "Bronx County" = "Bronx",
+  "Richmond County" = "Staten Island"
+)
 
+df_long_zori <- df_zori %>%
+  select(CountyName, starts_with("20")) %>%
+  pivot_longer(
+    cols = starts_with("20"),
+    names_to = "Date",
+    values_to = "ZORI"
+  ) %>%
+  mutate(
+    Date = as.Date(Date, format = "%Y-%m-%d"),
+    Year = as.integer(format(Date, "%Y")),
+    Borough = str_replace(CountyName, " County", ""),
+    Borough = recode(Borough, !!!borough_mapping)
+  ) %>%
+  filter(!is.na(Borough) & !is.na(ZORI))
+
+average_rent_by_borough_year <- df_long_zori %>%
+  group_by(Borough, Year) %>%
+  summarise(
+    Average_Rental_Price = mean(ZORI, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  mutate(Average_Rental_Price = round(Average_Rental_Price, 2)) %>%
+  pivot_wider(
+    names_from = Year,
+    values_from = Average_Rental_Price
+  ) %>%
+  arrange(desc(`2024`)) 
+
+print("Average Annual Rental Price (ZORI) by Borough (USD):")
+print(average_rent_by_borough_year)
 ```
+
+The rental market analysis for NYC boroughs from 2015 to 2024 reveals stark contrasts and rapid changes: Manhattan consistently commands the highest rent, surpassing $4,000 by 2024, while the Bronx remains the most affordable. During the initial pandemic years (2020–2021), rents in the denser boroughs (Manhattan and Brooklyn) stalled or decreased, but the Bronx saw a slight increase, suggesting a shift toward lower-cost and less-dense areas. Critically, starting in 2022, all boroughs experienced a sharp, rapid rebound in rent growth, indicating a strong post-pandemic resurgence in demand across the entire NYC rental market.
+
+## 2.3
+
+### Make a plot showing NYC Rental Prices within ZIP codes for all available years. Your plot should facilitate comparisons across boroughs. Comment on any significant elements of this plot.
+
