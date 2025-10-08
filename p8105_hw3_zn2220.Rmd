@@ -147,4 +147,75 @@ colnames(mean_hour_table)[2:8] <- day_names
 kable(mean_hour_table, caption = "Mean Order Hour of Day by Product and Day of Week")
 ```
 
+# Problem 2
+
+## 2.0
+
+Clean and see, Transformation and Combination.
+
+```{r message=FALSE}
+zillow_rent_data <- read_csv("zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv")
+zip_code_info <- read_csv("zillow_data/Zip Codes.csv")
+
+glimpse(zillow_rent_data)
+summary(zillow_rent_data)
+sum(is.na(zillow_rent_data$RegionName))
+
+glimpse(zip_code_info)
+sum(duplicated(zip_code_info$ZipCode))
+sum(is.na(zip_code_info$Neighborhood))
+
+final_zillow_data <- zillow_rent_data %>%
+  pivot_longer(
+    cols = starts_with("20"),
+    names_to = "period",
+    values_to = "value"
+  ) %>%
+  clean_names() %>%
+  mutate(
+    county = str_remove(county_name, " County$"),
+    postal_code = as.character(region_name),
+    period = ymd(period)
+  ) %>%
+  left_join(
+    zip_code_info %>%
+      clean_names() %>%
+      mutate(postal_code = as.character(zip_code)),
+    by = c("postal_code", "county")
+  ) %>%
+  select(
+    postal_code,
+    borough = county,
+    area = neighborhood,
+    period,
+    value
+  ) %>%
+  arrange(postal_code, period)
+
+write_csv(final_zillow_data, "final_zillow_data.csv")
+```
+
+## 2.1
+
+### There are 116 months between January 2015 and August 2024. How many ZIP codes are observed 116 times? How many are observed fewer than 10 times? Why are some ZIP codes are observed rarely and others observed in each month?
+
+```{r}
+df <- read_csv("final_zillow_data.csv")
+
+counts <- df %>%
+  group_by(postal_code) %>%
+  summarize(n_months = n_distinct(period), .groups = "drop")
+
+n_116 <- sum(counts$n_months == 116)
+n_less_10 <- sum(counts$n_months < 10)
+
+n_116
+n_less_10
+```
+
+Some ZIP codes are observed in all 116 months because Zillow consistently tracks rental data for those stable, well-established areas. Others appear rarely because data collection began later, ended earlier, or the ZIP codes represent small, newly developed, or discontinued regions. Missing or incomplete data may also result from changes in ZIP boundaries or limited housing market activity.
+
+## 2.2
+
+### Create a reader-friendly table showing the average rental price in each borough and year (not month). Comment on trends in this table.
 
