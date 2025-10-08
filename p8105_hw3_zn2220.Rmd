@@ -282,3 +282,64 @@ rental_price_plot
 ```
 
 The plot comparing rental price trends across NYC boroughs highlights that Manhattan maintains a significantly higher rental price bracket than all other boroughs, while the Bronx consistently remains the most affordable. The most striking element is the market volatility related to the COVID-19 pandemic: Manhattan and Brooklyn experienced the most dramatic "V-shaped" trend, with sharp declines in 2020 followed by an accelerated surge in 2021 and 2022 that quickly pushed rents past pre-pandemic levels, whereas the Bronx and Staten Island showed flatter trends with lower initial dips and a slower, steadier recent price appreciation. Additionally, the plot reveals significant rental price disparity within Manhattan and Brooklyn ZIP codes compared to the more homogenous price clustering observed in the Bronx.
+
+## 2.4
+
+### Compute the average rental price within each ZIP code over each month in 2023. Make a reader-friendly plot showing the distribution of ZIP-code-level rental prices across boroughs; put differently, your plot should facilitate the comparison of the distribution of average rental prices across boroughs. Comment on this plot.
+
+```{r}
+borough_mapping <- c(
+  "Kings County" = "Brooklyn",
+  "Queens County" = "Queens",
+  "New York County" = "Manhattan",
+  "Bronx County" = "Bronx",
+  "Richmond County" = "Staten Island"
+)
+
+df_avg_rent <- df_zori %>%
+  select(RegionName, CountyName, starts_with("2023")) %>%
+  mutate(Average_2023_ZORI = rowMeans(select(., starts_with("2023")), na.rm = TRUE)) %>%
+  select(RegionName, CountyName, Average_2023_ZORI) %>%
+  filter(!is.nan(Average_2023_ZORI))
+
+df_avg_rent <- df_avg_rent %>%
+  mutate(Borough = CountyName) %>%
+  mutate(Borough = recode(Borough, !!!borough_mapping)) %>%
+  filter(!is.na(Borough))
+
+borough_order <- df_avg_rent %>%
+  group_by(Borough) %>%
+  summarise(Median_Rent = median(Average_2023_ZORI)) %>%
+  arrange(desc(Median_Rent)) %>%
+  pull(Borough)
+
+rental_distribution_plot <- ggplot(df_avg_rent, aes(x = factor(Borough, levels = borough_order), y = Average_2023_ZORI)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7, outlier.color = "red") +
+  labs(
+    title = "Distribution of 2023 Average Rental Prices (ZORI) by NYC Borough",
+    x = "Borough",
+    y = "Average 2023 ZIP Code Rental Price (USD)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+rental_distribution_plot
+```
+
+The box plot  clearly illustrates the significant and stratified distribution of rental affordability in New York City during 2023. Manhattan has the highest median rent, the highest top-end rental prices (indicated by the maximum whisker and outliers), and the broadest overall range, reflecting its diverse and premium housing stock. Brooklyn follows as the second most expensive borough, showing a high median but also a wide interquartile range (IQR), suggesting a strong internal price disparity between its ZIP codes. Queens and Staten Island occupy the mid-range in terms of median price, but Queens exhibits a much wider distribution and higher outliers, while Staten Island has the tightest IQR, indicating a relatively consistent price range across its ZIP codes. The Bronx consistently ranks as the most affordable borough, with the lowest median, the smallest IQR, and the lowest overall maximum price, making it the most concentrated at the lower end of the NYC rental spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
