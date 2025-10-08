@@ -280,3 +280,5 @@ rental_price_plot <- ggplot(df_plot, aes(x = Date, y = ZORI, group = RegionName,
 
 rental_price_plot
 ```
+
+The plot comparing rental price trends across NYC boroughs highlights that Manhattan maintains a significantly higher rental price bracket than all other boroughs, while the Bronx consistently remains the most affordable. The most striking element is the market volatility related to the COVID-19 pandemic: Manhattan and Brooklyn experienced the most dramatic "V-shaped" trend, with sharp declines in 2020 followed by an accelerated surge in 2021 and 2022 that quickly pushed rents past pre-pandemic levels, whereas the Bronx and Staten Island showed flatter trends with lower initial dips and a slower, steadier recent price appreciation. Additionally, the plot reveals significant rental price disparity within Manhattan and Brooklyn ZIP codes compared to the more homogenous price clustering observed in the Bronx.
