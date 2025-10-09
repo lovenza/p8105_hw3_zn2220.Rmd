@@ -104,7 +104,6 @@ aisle_counts %>%
     panel.grid.minor = element_blank(),
     plot.caption = element_text(color = "grey")
   )
-
 ```
 
 ## 1.3
@@ -271,7 +270,6 @@ ggplot(fz_df, aes(x = period, y = value, group = postal_code)) +
     panel.grid.minor = element_blank(),
     panel.spacing = unit(1, "lines")
   )
-
 ```
 
 Across all boroughs, rents dipped around 2020, likely reflecting pandemic impacts, and then rose sharply through 2024. Manhattan consistently has the highest rents and the widest ZIP-code spread, indicating large within-borough variation. Brooklyn and Queens follow similar trends at lower levels, with a strong post-2021 rebound. The Bronx and Staten Island start from much lower rent levels but display the steepest proportional increases, suggesting faster growth in outer areas. Overall, the plot highlights both persistent spatial inequality and citywide rent escalation after 2021.
@@ -475,7 +473,6 @@ activity_plot <- total_activity %>%
   )
 
 activity_plot
-
 ```
 
 Across all education groups, activity levels tend to decline with age, with noticeable variability among individuals. In general, women (red lines) show slightly higher total activity than men (blue lines), particularly in middle age. Younger adults display more variability, while older participants show lower and more stable activity. The patterns suggest that age is inversely associated with physical activity, and that sex differences are modest, with education level showing limited influence beyond overall variability.
