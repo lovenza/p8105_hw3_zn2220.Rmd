@@ -360,3 +360,46 @@ nhanes <- left_join(covar, accel, by = "seqn")
 
 ```
 
+## 3.2
+
+### Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.
+
+```{r}
+edu_sex_table <- nhanes %>%
+  count(education, sex, name = "n") %>%
+  pivot_wider(names_from = sex, values_from = n) %>%
+  mutate(total = male + female) %>%
+  kable(
+    caption = "Number of Men and Women in Each Education Category",
+    col.names = c("Education Level", "Men", "Women", "Total")
+  )
+
+edu_sex_table
+
+age_plot <- nhanes %>%
+  ggplot(aes(x = age, fill = sex)) +
+  geom_histogram(alpha = 0.7, position = "identity", bins = 20) +
+  facet_wrap(~education, nrow = 1) +
+  scale_fill_manual(values = c("steelblue", "tomato")) +
+  labs(
+    title = "Age Distributions of Men and Women by Education Level",
+    x = "Age (years)",
+    y = "Count",
+    fill = "Sex"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+
+age_plot
+```
+
+
+
+
+
+
+
