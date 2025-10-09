@@ -232,7 +232,7 @@ kable(
 )
 ```
 
-Across boroughs, rental prices generally show a gradual upward trend from 2015 to early 2020, reflecting steady market growth. Many areas exhibit a noticeable dip around 2020–2021, likely due to the COVID-19 pandemic’s economic effects. After 2021, prices rebound sharply, reaching their highest levels by 2023–2024, indicating post-pandemic recovery and renewed demand, especially in central boroughs like Manhattan and Brooklyn.
+From 2015 to 2024, all NYC boroughs show overall growth, with a slight dip around 2020 likely due to the pandemic followed by strong rebounds. Manhattan remains the highest throughout, rising sharply after 2021. Brooklyn and Queens show steady, moderate increases, while Staten Island—available only from 2020—grows quickly in recent years. The Bronx, though lowest in absolute value, experiences the fastest relative gain, indicating gradual convergence among outer boroughs.
 
 ## 2.3
 
@@ -274,7 +274,7 @@ ggplot(fz_df, aes(x = period, y = value, group = postal_code)) +
 
 ```
 
-The plot shows distinct borough-level differences in rental prices. Manhattan maintains the highest rent levels throughout the period, followed by Brooklyn and Queens. A sharp decline is visible around 2020–2021 across most ZIP codes, reflecting the pandemic-driven drop in housing demand. Afterward, rents rise steadily again, with a pronounced rebound in 2022–2024. Outer boroughs such as the Bronx and Staten Island display lower but more stable price trajectories compared to central boroughs.
+Across all boroughs, rents dipped around 2020, likely reflecting pandemic impacts, and then rose sharply through 2024. Manhattan consistently has the highest rents and the widest ZIP-code spread, indicating large within-borough variation. Brooklyn and Queens follow similar trends at lower levels, with a strong post-2021 rebound. The Bronx and Staten Island start from much lower rent levels but display the steepest proportional increases, suggesting faster growth in outer areas. Overall, the plot highlights both persistent spatial inequality and citywide rent escalation after 2021.
 
 ## 2.4
 
@@ -306,7 +306,7 @@ ggplot(rent_2023, aes(x = borough, y = avg_rent_2023, fill = borough)) +
   )
 ```
 
-The 2023 distribution plot reveals clear rent disparities among boroughs. Manhattan shows the highest median and widest spread of rents, indicating both high overall costs and large variability between ZIP codes. Brooklyn follows with moderately high rents and a narrower spread. Queens displays mid-range prices with moderate variation, while the Bronx and Staten Island have distinctly lower medians and tighter distributions, suggesting more affordable and homogeneous rental markets. Overall, the figure highlights the strong geographic stratification of housing costs within New York City.
+Manhattan has the highest median rent and the widest spread, reflecting both high costs and strong variation among ZIP codes. Brooklyn follows with moderately high rents and a wider range than other outer boroughs. Queens, Staten Island, and the Bronx have much lower medians, with relatively compact distributions, indicating more uniform and affordable rental markets. A few outliers in Manhattan and Brooklyn highlight extremely high-rent areas. Overall, the plot emphasizes pronounced spatial inequality, with a steep rent gradient from Manhattan outward.
 
 ## 2.5
 
@@ -444,9 +444,7 @@ age_plot <- nhanes %>%
 age_plot
 ```
 
-The table shows that the number of men and women is fairly balanced across education levels, with a slightly higher count in the “more than high school” group for both sexes (56 men, 59 women). This suggests that participants with higher education are more prevalent in the sample.
-
-From the histogram, we can see clear age differences across education categories. Participants with less than a high school education tend to be older on average, while those with higher education levels show a broader spread including many younger adults. The male and female age distributions are generally similar within each education level, though women appear slightly more represented in older age ranges, particularly in the high-education category. Overall, both the table and the plot highlight that educational attainment in this NHANES sample is associated with age structure differences.
+Within each education group, men and women appear fairly evenly represented, though women are slightly more common in the “more than high school” category. The age spread is wide in all groups, indicating participants span multiple generations. Individuals with less than a high school education tend to be older, while those with higher education cluster more around middle ages. Overall, the figure suggests that educational attainment is modestly associated with age and that gender distributions are generally balanced across education levels.
 
 ## 3.3
 
@@ -480,9 +478,7 @@ activity_plot
 
 ```
 
-The plot shows that total daily activity tends to decline with age across all education levels, although there is substantial variability among individuals. Men generally show slightly higher total activity than women, but the difference narrows as age increases. Among participants with higher education, both men and women maintain relatively higher activity levels across the lifespan. In contrast, those with less than a high school education exhibit lower overall activity and a sharper decline with aging.
-
-These patterns suggest that both age and education are associated with physical activity, and that higher educational attainment may correspond to more consistent engagement in daily movement.
+Across all education groups, activity levels tend to decline with age, with noticeable variability among individuals. In general, women (red lines) show slightly higher total activity than men (blue lines), particularly in middle age. Younger adults display more variability, while older participants show lower and more stable activity. The patterns suggest that age is inversely associated with physical activity, and that sex differences are modest, with education level showing limited influence beyond overall variability.
 
 ## 3.4
 
@@ -526,12 +522,7 @@ activity_timecourse %>%
   )
 ```
 
-The 24-hour activity profiles show clear daily cycles: activity levels rise sharply in the morning, peak around mid-day, and decline in the evening before reaching very low levels at night. Across all education levels, both men and women follow this pattern, reflecting typical wake–sleep rhythms.
-
-Participants with more than a high school education have slightly higher and more stable daytime activity levels, suggesting more structured daily routines or higher engagement in consistent physical activity. Those with less than high school education show lower overall intensity and less distinct peaks, implying more irregular daily movement.
-
-Between sexes, women tend to maintain marginally higher mean activity across most of the day in each education group, though the overall temporal patterns are very similar. These results indicate that both education level and sex are modestly associated with differences in activity magnitude, but daily rhythmicity remains consistent across groups.
-
+Across all groups, women (red lines) show slightly higher mean activity levels than men (blue lines) throughout most of the day, suggesting greater overall movement or engagement. The timing of peaks and rest periods is similar between sexes, indicating comparable daily routines. Education level does not appear to strongly alter the general pattern, though small differences in peak intensity may exist. Overall, the figure highlights a shared diurnal activity rhythm, with modest sex differences in average intensity.
 
 
 
