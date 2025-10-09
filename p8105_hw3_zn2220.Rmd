@@ -99,10 +99,12 @@ aisle_counts %>%
   scale_y_continuous(labels = scales::comma) +
   theme_minimal(base_size = 10) +
   theme(
+    plot.title = element_text(hjust = 0.5),
     plot.title.position = "plot",
     panel.grid.minor = element_blank(),
-    plot.caption = element_text(color = "grey50")
+    plot.caption = element_text(color = "grey")
   )
+
 ```
 
 ## 1.3
@@ -157,14 +159,6 @@ Clean and see, Transformation and Combination.
 zillow_rent_data <- read_csv("zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv")
 zip_code_info <- read_csv("zillow_data/Zip Codes.csv")
 
-glimpse(zillow_rent_data)
-summary(zillow_rent_data)
-sum(is.na(zillow_rent_data$RegionName))
-
-glimpse(zip_code_info)
-sum(duplicated(zip_code_info$ZipCode))
-sum(is.na(zip_code_info$Neighborhood))
-
 final_zillow_data <- zillow_rent_data %>%
   pivot_longer(
     cols = starts_with("20"),
@@ -190,6 +184,7 @@ final_zillow_data <- zillow_rent_data %>%
     period,
     value
   ) %>%
+  mutate(borough = if_else(borough == "New York", "Manhattan", borough)) %>%
   arrange(postal_code, period)
 
 write_csv(final_zillow_data, "final_zillow_data.csv")
@@ -199,7 +194,7 @@ write_csv(final_zillow_data, "final_zillow_data.csv")
 
 ### There are 116 months between January 2015 and August 2024. How many ZIP codes are observed 116 times? How many are observed fewer than 10 times? Why are some ZIP codes are observed rarely and others observed in each month?
 
-```{r}
+```{r message=FALSE}
 fz_df <- read_csv("final_zillow_data.csv")
 
 counts <- fz_df %>%
@@ -219,19 +214,22 @@ Some ZIP codes are observed in all 116 months because Zillow consistently tracks
 
 ### Create a reader-friendly table showing the average rental price in each borough and year (not month). Comment on trends in this table.
 
-```{r}
+```{r message=FALSE}
 borough_year_table <- fz_df %>%
   mutate(year = year(period)) %>%
   group_by(borough, year) %>%
   summarize(mean_rent = mean(value, na.rm = TRUE), .groups = "drop") %>%
-  arrange(borough, year)
+  arrange(borough, year) %>%
+  pivot_wider(
+    names_from = year,
+    values_from = mean_rent
+  )
 
 kable(
   borough_year_table,
   digits = 0,
   caption = "Average Rental Price by Borough and Year"
 )
-
 ```
 
 Across boroughs, rental prices generally show a gradual upward trend from 2015 to early 2020, reflecting steady market growth. Many areas exhibit a noticeable dip around 2020–2021, likely due to the COVID-19 pandemic’s economic effects. After 2021, prices rebound sharply, reaching their highest levels by 2023–2024, indicating post-pandemic recovery and renewed demand, especially in central boroughs like Manhattan and Brooklyn.
@@ -240,22 +238,39 @@ Across boroughs, rental prices generally show a gradual upward trend from 2015 t
 
 ### Make a plot showing NYC Rental Prices within ZIP codes for all available years. Your plot should facilitate comparisons across boroughs. Comment on any significant elements of this plot.
 
-```{r}
-ggplot(fz_df, aes(x = period, y = value, group = postal_code, color = borough)) +
-  geom_line(alpha = 0.3) +
+```{r message=FALSE}
+borough_order <- fz_df %>%
+  group_by(borough) %>%
+  summarize(mean_rent = mean(value, na.rm = TRUE)) %>%
+  arrange(desc(mean_rent)) %>%
+  pull(borough)
+
+fz_df <- fz_df %>%
+  mutate(borough = factor(borough, levels = borough_order))
+
+ggplot(fz_df, aes(x = period, y = value, group = postal_code)) +
+  geom_line(color = "orange", alpha = 0.6, linewidth = 0.5) +
+  stat_summary(
+    fun = mean,
+    geom = "line",
+    aes(group = borough),
+    color = "red", linewidth = 1.3
+  ) +
+  facet_wrap(~borough, scales = "free_y") +
   labs(
-    title = "NYC Rental Prices by ZIP Code (2015–2024)",
+    title = "NYC Rental Prices within ZIP Codes by Borough (2015–2024)",
+    subtitle = "Gray lines are individual ZIP codes; Red line shows borough average (ordered by overall rent level).",
     x = "Year",
-    y = "Rental Price ($)",
-    color = "Borough",
-    caption = "Source: Zillow Observed Rent Index (ZORI)"
+    y = "Zillow Observed Rent Index (USD)"
   ) +
-  theme_minimal(base_size = 10) +
+  theme_bw(base_size = 11) +
   theme(
-    legend.position = "bottom",
-    plot.title.position = "plot"
-  ) +
-  scale_color_brewer(palette = "Set1")
+    plot.title.position = "plot",
+    plot.subtitle = element_text(size = 9, color = "gray"),
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(1, "lines")
+  )
 
 ```
 
@@ -265,11 +280,15 @@ The plot shows distinct borough-level differences in rental prices. Manhattan ma
 
 ### Compute the average rental price within each ZIP code over each month in 2023. Make a reader-friendly plot showing the distribution of ZIP-code-level rental prices across boroughs; put differently, your plot should facilitate the comparison of the distribution of average rental prices across boroughs. Comment on this plot.
 
-```{r}
+```{r message=FALSE}
 rent_2023 <- fz_df %>%
   filter(year(period) == 2023) %>%
   group_by(borough, postal_code) %>%
-  summarize(avg_rent_2023 = mean(value, na.rm = TRUE), .groups = "drop")
+  summarize(avg_rent_2023 = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  group_by(borough) %>%
+  mutate(borough_mean = mean(avg_rent_2023, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(borough = fct_reorder(borough, borough_mean, .desc = TRUE))
 
 ggplot(rent_2023, aes(x = borough, y = avg_rent_2023, fill = borough)) +
   geom_boxplot(alpha = 0.8, outlier.alpha = 0.3) +
@@ -279,6 +298,7 @@ ggplot(rent_2023, aes(x = borough, y = avg_rent_2023, fill = borough)) +
     y = "Average Monthly Rent ($)",
     caption = "Source: Zillow Observed Rent Index (ZORI)"
   ) +
+  scale_fill_brewer(palette = "Set2") +
   theme_minimal(base_size = 10) +
   theme(
     legend.position = "none",
@@ -292,45 +312,69 @@ The 2023 distribution plot reveals clear rent disparities among boroughs. Manhat
 
 ### Combine the two previous plots into a single graphic, and export this to a results folder in your repository.
 
-```{r}
-fz_df <- read_csv("final_zillow_data.csv")
+```{r message=FALSE}
+borough_order <- fz_df %>%
+  group_by(borough) %>%
+  summarize(mean_rent = mean(value, na.rm = TRUE)) %>%
+  arrange(desc(mean_rent)) %>%
+  pull(borough)
 
-p1 <- ggplot(fz_df, aes(x = period, y = value, group = postal_code, color = borough)) +
-  geom_line(alpha = 0.3) +
+fz_df <- fz_df %>%
+  mutate(borough = factor(borough, levels = borough_order))
+
+p1 <- ggplot(fz_df, aes(x = period, y = value, group = postal_code)) +
+  geom_line(color = "orange", alpha = 0.6, linewidth = 0.5) +
+  stat_summary(
+    fun = mean,
+    geom = "line",
+    aes(group = borough),
+    color = "red", linewidth = 1.3
+  ) +
+  facet_wrap(~borough, scales = "free_y") +
   labs(
-    title = "NYC Rental Prices by ZIP Code (2015–2024)",
+    title = "NYC Rental Prices within ZIP Codes by Borough (2015–2024)",
+    subtitle = "Orange lines show ZIP-level trends; red line shows borough average (ordered by overall rent level).",
     x = "Year",
-    y = "Rental Price ($)",
-    color = "Borough"
+    y = "Zillow Observed Rent Index (USD)"
   ) +
-  theme_minimal(base_size = 10) +
+  theme_bw(base_size = 11) +
   theme(
-    legend.position = "bottom",
-    plot.title.position = "plot"
-  ) +
-  scale_color_brewer(palette = "Set1")
+    plot.title.position = "plot",
+    plot.subtitle = element_text(size = 9, color = "gray40"),
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(1, "lines")
+  )
 
 rent_2023 <- fz_df %>%
   filter(year(period) == 2023) %>%
   group_by(borough, postal_code) %>%
-  summarize(avg_rent_2023 = mean(value, na.rm = TRUE), .groups = "drop")
+  summarize(avg_rent_2023 = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  group_by(borough) %>%
+  mutate(borough_mean = mean(avg_rent_2023, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(borough = fct_reorder(borough, borough_mean, .desc = TRUE))
 
 p2 <- ggplot(rent_2023, aes(x = borough, y = avg_rent_2023, fill = borough)) +
   geom_boxplot(alpha = 0.8, outlier.alpha = 0.3) +
   labs(
     title = "Distribution of ZIP-Code-Level Average Rental Prices by Borough (2023)",
     x = "Borough",
-    y = "Average Monthly Rent ($)"
+    y = "Average Monthly Rent ($)",
+    caption = "Source: Zillow Observed Rent Index (ZORI)"
   ) +
+  scale_fill_brewer(palette = "Set2") +
   theme_minimal(base_size = 10) +
   theme(
     legend.position = "none",
     plot.title.position = "plot"
-  ) 
+  )
 
 combined_plot <- p1 / p2
+
 ggsave("results/nyc_rent_combined_plot.png", combined_plot, width = 10, height = 10, dpi = 300)
 
+combined_plot
 ```
 
 # Problem 3
@@ -339,7 +383,7 @@ ggsave("results/nyc_rent_combined_plot.png", combined_plot, width = 10, height =
 
 ### Load, tidy, merge, and otherwise organize the data sets. Your final dataset should include all originally observed variables; exclude participants less than 21 years of age, and those with missing demographic data; and encode data with reasonable variable classes (i.e. not numeric, and using factors with the ordering of tables and plots in mind).
 
-```{r}
+```{r message=FALSE}
 covar <- read_csv("https://p8105.com/data/nhanes_covar.csv", skip = 4) %>%
   clean_names() %>%
   mutate(
@@ -360,13 +404,14 @@ accel <- read_csv("https://p8105.com/data/nhanes_accel.csv") %>%
 
 nhanes <- left_join(covar, accel, by = "seqn")
 
+glimpse(nhanes)
 ```
 
 ## 3.2
 
 ### Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.
 
-```{r}
+```{r message=FALSE}
 edu_sex_table <- nhanes %>%
   count(education, sex, name = "n") %>%
   pivot_wider(names_from = sex, values_from = n) %>%
@@ -407,7 +452,7 @@ From the histogram, we can see clear age differences across education categories
 
 ### Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.
 
-```{r}
+```{r message=FALSE}
 total_activity <- nhanes %>%
   mutate(total_activity = rowSums(select(., starts_with("min")))) %>%
   select(seqn, sex, age, bmi, education, total_activity)
@@ -443,7 +488,7 @@ These patterns suggest that both age and education are associated with physical 
 
 ### Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
 
-```{r}
+```{r message=FALSE}
 activity_by_minute <- nhanes %>%
   pivot_longer(
     cols = starts_with("min"),
