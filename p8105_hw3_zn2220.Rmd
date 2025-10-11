@@ -197,6 +197,7 @@ write_csv(final_zillow_data, "final_zillow_data.csv")
 fz_df <- read_csv("final_zillow_data.csv")
 
 counts <- fz_df %>%
+  filter(!is.na(value)) %>% 
   group_by(postal_code) %>%
   summarize(n_months = n_distinct(period), .groups = "drop")
 
